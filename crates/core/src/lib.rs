@@ -1,90 +1,51 @@
 //! Thin application-core stubs for the GPUI starter shell.
 //!
-//! Intentionally minimal: connection settings + status labels only.
-//! No Modbus, catalog, or scheduler logic.
+//! Pure UI shell state: navigation selection + status message.
+//! No protocol, device, or network concepts.
 
 #![forbid(unsafe_code)]
 
-/// Default connection placeholders (demo values for the shell).
-pub mod defaults {
-    pub const HOST: &str = "127.0.0.1";
-    pub const PORT: u16 = 502;
-    pub const UNIT_ID: u8 = 1;
-}
-
-/// Connection settings shown in the shell header panel.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ConnectionSettings {
-    pub host: String,
-    pub port: u16,
-    pub unit_id: u8,
-}
-
-impl Default for ConnectionSettings {
-    fn default() -> Self {
-        Self {
-            host: defaults::HOST.to_string(),
-            port: defaults::PORT,
-            unit_id: defaults::UNIT_ID,
-        }
-    }
-}
-
-/// High-level connection status for the status bar.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum ConnectionStatus {
-    #[default]
-    Disconnected,
-    Connecting,
-    Connected,
-    Error,
-}
-
-impl ConnectionStatus {
-    /// German status label.
-    pub fn label_de(self) -> &'static str {
-        match self {
-            Self::Disconnected => "Getrennt",
-            Self::Connecting => "Verbinden…",
-            Self::Connected => "Verbunden",
-            Self::Error => "Fehler",
-        }
-    }
+/// Default German navigation labels for the side panel.
+pub fn default_nav_items() -> Vec<String> {
+    ["Übersicht", "Einstellungen", "Hilfe"]
+        .into_iter()
+        .map(str::to_string)
+        .collect()
 }
 
 /// Minimal shell state shared by headless smoke and the GPUI view.
 #[derive(Debug, Clone)]
 pub struct ShellState {
-    pub connection: ConnectionSettings,
-    pub status: ConnectionStatus,
-    pub backend_mock: bool,
+    pub nav_items: Vec<String>,
+    pub selected_nav: String,
     pub status_message: String,
 }
 
 impl ShellState {
-    pub fn new(backend_mock: bool) -> Self {
+    pub fn new() -> Self {
+        let nav_items = default_nav_items();
+        let selected_nav = nav_items
+            .first()
+            .cloned()
+            .unwrap_or_else(|| "Übersicht".to_string());
         Self {
-            connection: ConnectionSettings::default(),
-            status: ConnectionStatus::Disconnected,
-            backend_mock,
-            status_message: if backend_mock {
-                "Cloud/Dev: Mock-Backend aktiv.".to_string()
-            } else {
-                "Bereit.".to_string()
-            },
+            nav_items,
+            selected_nav,
+            status_message: "Bereit.".to_string(),
         }
     }
 
-    pub fn backend_label(&self) -> &'static str {
-        if self.backend_mock {
-            "Mock-Backend"
-        } else {
-            "Live-Backend"
+    pub fn select_nav(&mut self, item: String) {
+        if self.nav_items.iter().any(|n| n == &item) {
+            self.selected_nav = item;
+            self.status_message = format!("Auswahl: {}", self.selected_nav);
         }
     }
+}
 
-    pub fn is_connected(&self) -> bool {
-        self.status == ConnectionStatus::Connected
+impl Default for ShellState {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -93,16 +54,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn defaults_match_placeholders() {
-        let c = ConnectionSettings::default();
-        assert_eq!(c.host, "127.0.0.1");
-        assert_eq!(c.port, 502);
-        assert_eq!(c.unit_id, 1);
+    fn default_nav_has_german_labels() {
+        let state = ShellState::new();
+        assert!(state.nav_items.contains(&"Übersicht".to_string()));
+        assert_eq!(state.selected_nav, "Übersicht");
     }
 
     #[test]
-    fn german_status_labels() {
-        assert_eq!(ConnectionStatus::Disconnected.label_de(), "Getrennt");
-        assert_eq!(ConnectionStatus::Connected.label_de(), "Verbunden");
+    fn select_nav_updates_status() {
+        let mut state = ShellState::new();
+        state.select_nav("Hilfe".to_string());
+        assert_eq!(state.selected_nav, "Hilfe");
+        assert!(state.status_message.contains("Hilfe"));
     }
 }

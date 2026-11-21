@@ -1,14 +1,14 @@
-# test2 — GPUI Desktop Starter
+# test2 — Pure GPUI Desktop Shell
 
-Slim Rust + GPUI desktop GUI workspace (German UI, Windows-primary, mock-first).  
-Modeled on the **shell layout** of [prime-akikko/test1](https://github.com/prime-akikko/test1) (Lambda Modbus GPUI), without Modbus / catalog / register product features.
+Slim Rust + GPUI desktop GUI workspace (German UI, Windows-primary).  
+Panel layout inspired by [prime-akikko/test1](https://github.com/prime-akikko/test1) — **without** Modbus TCP, register catalog, poll/cyclic writes, or any protocol crates.
 
 ## Workspace
 
 | Crate | Path | Role |
 | --- | --- | --- |
-| `starter_core` | `crates/core` | Thin connection/status stubs |
-| `starter_mock` | `crates/mock` | In-memory connect/disconnect stub |
+| `starter_core` | `crates/core` | Nav selection + status stubs |
+| `starter_mock` | `crates/mock` | Demo status copy for headless smoke |
 | `starter_app` | `crates/app` | GPUI binary (optional `gui` feature) |
 
 ## Build / run
@@ -19,7 +19,7 @@ cargo check --workspace
 cargo test --workspace
 ./scripts/check.sh
 
-# Headless smoke (default features = mock, no GPUI native link)
+# Headless smoke (default features = mock demo copy, no GPUI native link)
 cargo run -p starter_app
 
 # Optional GUI typecheck / Windows window
@@ -42,8 +42,12 @@ See [`crates/app/README.md`](crates/app/README.md) for Windows MSVC / D3D11 note
 | Target | Role |
 | --- | --- |
 | **Windows** | Primary GUI acceptance (MSVC + Windows SDK + D3D11) |
-| Linux / Cloud | Mock-first headless `cargo run` / `cargo test`; `gui` compile is best-effort |
+| Linux / Cloud | Headless `cargo run` / `cargo test`; `gui` compile is best-effort |
+
+## Out of scope
+
+Modbus TCP, Lambda EU13L catalog, register grids, poll/cyclic schedulers, device connect UI, `lambda_*` protocol crates.
 
 ## Agent notes
 
-See [`AGENTS.md`](AGENTS.md). Keep this repo a **starter skeleton** — do not invent Lambda EU13L Modbus product features here.
+See [`AGENTS.md`](AGENTS.md). Keep this repo a **pure GUI skeleton**.

@@ -5,7 +5,7 @@ edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
 authors.workspace = true
-description = "GPUI desktop starter shell (Windows-primary)"
+description = "GPUI desktop starter shell (Windows-primary) — pure GUI, no protocol"
 publish = false
 default-run = "starter_app"
 
@@ -22,7 +22,7 @@ workspace = true
 
 [features]
 default = ["mock"]
-# Use in-memory mock backend (Cloud/CI and local smoke).
+# Demo copy for headless Cloud/CI smoke (no network).
 mock = ["dep:starter_mock"]
 # Enable the GPUI dependency. Default is off so Linux/Cloud `cargo check`
 # stays green without Wayland/X11/Vulkan; Windows GUI builds pass `--features gui`.

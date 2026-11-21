@@ -1,6 +1,6 @@
 //! GPUI starter binary.
 //!
-//! Default Cloud/CI build: `mock` feature, no GPUI link.
+//! Default Cloud/CI build: no GPUI link (headless smoke).
 //! Windows GUI: `cargo run -p starter_app --features gui`.
 
 #![forbid(unsafe_code)]
@@ -26,27 +26,23 @@ fn run_headless_smoke() {
     println!("{}", strings::WINDOW_TITLE);
     println!("{}", strings::APP_SUBHEADING);
 
-    let mut state = ShellState::new(cfg!(feature = "mock"));
-    println!(
-        "Defaults: {}:{} unit {}",
-        state.connection.host, state.connection.port, state.connection.unit_id
-    );
-    println!("Backend: {}", state.backend_label());
-    println!("Status: {}", state.status.label_de());
+    let mut state = ShellState::new();
+    println!("Navigation: {}", state.nav_items.join(", "));
+    println!("Auswahl: {}", state.selected_nav);
 
     #[cfg(feature = "mock")]
     {
-        let mut session = starter_mock::MockSession::new();
-        session.connect(&mut state);
-        println!("Nach Verbinden: {}", state.status.label_de());
+        starter_mock::apply_demo_status(&mut state);
         println!("{}", state.status_message);
-        session.disconnect(&mut state);
-        println!("Nach Trennen: {}", state.status.label_de());
+        state.select_nav("Einstellungen".to_string());
+        println!(
+            "Nach Auswahl: {} — {}",
+            state.selected_nav, state.status_message
+        );
     }
 
     #[cfg(not(feature = "mock"))]
     {
-        println!("Mock-Feature aus — kein automatischer Connect.");
         println!("{}", strings::MSG_HEADLESS_HINT);
     }
 

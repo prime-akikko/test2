@@ -17,7 +17,7 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 rust-version = "1.85"
 authors = ["GPUI starter contributors"]
-description = "Slim GPUI desktop GUI starter (German UI, Windows-primary)"
+description = "Pure GPUI desktop shell starter (German UI, Windows-primary, no protocol)"
 
 [workspace.dependencies]
 starter_core = { path = "crates/core", version = "0.1.0" }

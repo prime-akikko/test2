@@ -5,7 +5,7 @@ edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
 authors.workspace = true
-description = "Thin mock backend stub for the GPUI starter shell"
+description = "Demo UI helpers for the GPUI starter shell (no protocol)"
 publish = false
 
 [lints]

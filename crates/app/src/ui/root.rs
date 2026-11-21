@@ -1,6 +1,7 @@
-//! Root window: header | connection panel | main content | status bar.
+//! Root window: header | nav panel | main content | status bar.
 //!
-//! Slim skeleton modeled on the test1 shell layout — no Modbus/catalog UI.
+//! Pure GPUI shell — German labels, panel look inspired by test1.
+//! No protocol, device, or network UI.
 
 use gpui::{
     div, prelude::*, px, rgb, size, App, Application, Bounds, ClickEvent, Context, FontWeight,
@@ -10,9 +11,6 @@ use gpui::{
 
 use crate::strings;
 use starter_core::ShellState;
-
-#[cfg(feature = "mock")]
-use starter_mock::MockSession;
 
 mod theme {
     use super::{rgb, Rgba};
@@ -41,113 +39,60 @@ mod theme {
     pub fn accent_dim() -> Rgba {
         rgb(0x2f_7a71)
     }
-    pub fn danger() -> Rgba {
-        rgb(0xc4_5c5c)
-    }
-    pub fn field_bg() -> Rgba {
-        rgb(0x15_202e)
-    }
 }
 
 struct RootView {
     state: ShellState,
-    #[cfg(feature = "mock")]
-    session: MockSession,
 }
 
 impl RootView {
     fn new(window: &mut Window, _cx: &mut Context<Self>) -> Self {
         window.set_window_title(strings::WINDOW_TITLE);
-        Self {
-            state: ShellState::new(cfg!(feature = "mock")),
-            #[cfg(feature = "mock")]
-            session: MockSession::new(),
-        }
-    }
-
-    fn on_connect(&mut self, _: &ClickEvent, _window: &mut Window, cx: &mut Context<Self>) {
+        let mut state = ShellState::new();
         #[cfg(feature = "mock")]
         {
-            self.session.connect(&mut self.state);
+            starter_mock::apply_demo_status(&mut state);
         }
-        #[cfg(not(feature = "mock"))]
-        {
-            self.state.status_message =
-                "Kein Mock — Live-Backend ist in diesem Starter nicht verdrahtet.".to_string();
-        }
+        Self { state }
+    }
+
+    fn on_select_nav(&mut self, item: String, cx: &mut Context<Self>) {
+        self.state.select_nav(item);
         cx.notify();
     }
 
-    fn on_disconnect(&mut self, _: &ClickEvent, _window: &mut Window, cx: &mut Context<Self>) {
-        #[cfg(feature = "mock")]
-        {
-            self.session.disconnect(&mut self.state);
-        }
-        #[cfg(not(feature = "mock"))]
-        {
-            self.state.status = starter_core::ConnectionStatus::Disconnected;
-            self.state.status_message = strings::MSG_DISCONNECT_OK.to_string();
-        }
-        cx.notify();
-    }
-
-    fn labeled_value(&self, label: &'static str, value: String) -> impl IntoElement {
+    fn nav_button(&self, item: String, selected: bool, cx: &mut Context<Self>) -> impl IntoElement {
+        let label = item.clone();
         div()
-            .flex()
-            .flex_col()
-            .gap_1()
-            .min_w(px(120.))
-            .child(div().text_xs().text_color(theme::muted()).child(label))
-            .child(
-                div()
-                    .px_3()
-                    .py_2()
-                    .rounded_md()
-                    .bg(theme::field_bg())
-                    .border_1()
-                    .border_color(theme::border())
-                    .text_sm()
-                    .child(value),
-            )
-    }
-
-    fn action_button(
-        &self,
-        id: &'static str,
-        label: &'static str,
-        enabled: bool,
-        cx: &mut Context<Self>,
-        on_click: impl Fn(&mut Self, &ClickEvent, &mut Window, &mut Context<Self>) + 'static,
-    ) -> impl IntoElement {
-        let bg = if enabled {
-            theme::accent()
-        } else {
-            theme::accent_dim()
-        };
-        div()
-            .id(id)
+            .id(SharedString::from(format!("nav-{item}")))
             .px_3()
             .py_2()
             .rounded_md()
-            .bg(bg)
+            .bg(if selected {
+                theme::accent()
+            } else {
+                theme::panel_alt()
+            })
             .text_sm()
-            .font_weight(FontWeight::MEDIUM)
+            .font_weight(if selected {
+                FontWeight::SEMIBOLD
+            } else {
+                FontWeight::NORMAL
+            })
             .cursor_pointer()
-            .opacity(if enabled { 1.0 } else { 0.5 })
-            .when(enabled, |d| d.on_click(cx.listener(on_click)))
+            .hover(|s| s.bg(theme::accent_dim()))
+            .on_click(cx.listener(move |this, _: &ClickEvent, _window, cx| {
+                this.on_select_nav(item.clone(), cx);
+            }))
             .child(label)
     }
 }
 
 impl Render for RootView {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let connected = self.state.is_connected();
-        let status_label = self.state.status.label_de();
+        let selected = self.state.selected_nav.clone();
         let message = self.state.status_message.clone();
-        let host = self.state.connection.host.clone();
-        let port = self.state.connection.port.to_string();
-        let unit = self.state.connection.unit_id.to_string();
-        let backend = self.state.backend_label();
+        let nav_items = self.state.nav_items.clone();
 
         div()
             .id("root")
@@ -180,74 +125,63 @@ impl Render for RootView {
                             .child(strings::APP_SUBHEADING),
                     ),
             )
-            // Connection-style panel
-            .child(
-                div()
-                    .flex()
-                    .flex_col()
-                    .gap_2()
-                    .px_4()
-                    .py_3()
-                    .bg(theme::panel_alt())
-                    .border_b_1()
-                    .border_color(theme::border())
-                    .child(
-                        div()
-                            .text_xs()
-                            .text_color(theme::muted())
-                            .child(strings::CONNECTION_SECTION),
-                    )
-                    .child(
-                        div()
-                            .flex()
-                            .flex_row()
-                            .items_end()
-                            .gap_3()
-                            .child(self.labeled_value(strings::LABEL_HOST, host))
-                            .child(self.labeled_value(strings::LABEL_PORT, port))
-                            .child(self.labeled_value(strings::LABEL_UNIT, unit))
-                            .child(self.action_button(
-                                "btn-connect",
-                                strings::BTN_CONNECT,
-                                !connected,
-                                cx,
-                                Self::on_connect,
-                            ))
-                            .child(self.action_button(
-                                "btn-disconnect",
-                                strings::BTN_DISCONNECT,
-                                connected,
-                                cx,
-                                Self::on_disconnect,
-                            )),
-                    ),
-            )
-            // Main content area
+            // Body: nav | main
             .child(
                 div()
                     .flex_1()
                     .flex()
-                    .flex_col()
-                    .gap_2()
-                    .px_4()
-                    .py_4()
+                    .flex_row()
+                    .min_h(px(0.))
+                    // Side nav panel (layout inspired by test1 groups column)
                     .child(
                         div()
-                            .text_sm()
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .child(strings::MAIN_SECTION),
+                            .w(px(200.))
+                            .flex()
+                            .flex_col()
+                            .gap_2()
+                            .px_3()
+                            .py_3()
+                            .bg(theme::panel_alt())
+                            .border_r_1()
+                            .border_color(theme::border())
+                            .child(
+                                div()
+                                    .text_xs()
+                                    .text_color(theme::muted())
+                                    .child(strings::NAV_SECTION),
+                            )
+                            .children(nav_items.into_iter().map(|item| {
+                                let is_selected = item == selected;
+                                self.nav_button(item, is_selected, cx)
+                            })),
                     )
+                    // Main content
                     .child(
                         div()
                             .flex_1()
-                            .rounded_md()
-                            .border_1()
-                            .border_color(theme::border())
-                            .bg(theme::panel())
-                            .p_4()
-                            .text_sm()
-                            .text_color(theme::muted())
-                            .child(strings::MAIN_PLACEHOLDER),
+                            .flex()
+                            .flex_col()
+                            .gap_2()
+                            .px_4()
+                            .py_4()
+                            .child(
+                                div()
+                                    .text_sm()
+                                    .font_weight(FontWeight::SEMIBOLD)
+                                    .child(format!("{} — {selected}", strings::MAIN_SECTION)),
+                            )
+                            .child(
+                                div()
+                                    .flex_1()
+                                    .rounded_md()
+                                    .border_1()
+                                    .border_color(theme::border())
+                                    .bg(theme::panel())
+                                    .p_4()
+                                    .text_sm()
+                                    .text_color(theme::muted())
+                                    .child(strings::MAIN_PLACEHOLDER),
+                            ),
                     ),
             )
             // Status bar
@@ -264,18 +198,7 @@ impl Render for RootView {
                     .bg(theme::panel())
                     .text_xs()
                     .text_color(theme::muted())
-                    .child(format!("{}: {status_label}", strings::STATUS_CONNECTION))
-                    .child(backend)
-                    .child(
-                        div()
-                            .flex_1()
-                            .text_color(if connected {
-                                theme::accent()
-                            } else {
-                                theme::danger()
-                            })
-                            .child(message),
-                    ),
+                    .child(format!("{}: {message}", strings::STATUS_LABEL)),
             )
     }
 }

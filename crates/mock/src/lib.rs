@@ -1,39 +1,14 @@
-//! Thin mock backend for Cloud/CI and local smoke without a live device.
+//! Thin demo helpers for Cloud/CI headless smoke.
 //!
-//! Simulates connect / disconnect only — no protocol I/O.
+//! No network or protocol — only sample UI copy for the starter shell.
 
 #![forbid(unsafe_code)]
 
-use starter_core::{ConnectionStatus, ShellState};
+use starter_core::ShellState;
 
-/// In-memory mock session used by the starter shell.
-#[derive(Debug, Default)]
-pub struct MockSession {
-    connected: bool,
-}
-
-impl MockSession {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    pub fn connect(&mut self, state: &mut ShellState) {
-        state.status = ConnectionStatus::Connecting;
-        state.status_message = "Verbinden (Mock)…".to_string();
-        self.connected = true;
-        state.status = ConnectionStatus::Connected;
-        state.status_message = "Verbindung hergestellt (Mock).".to_string();
-    }
-
-    pub fn disconnect(&mut self, state: &mut ShellState) {
-        self.connected = false;
-        state.status = ConnectionStatus::Disconnected;
-        state.status_message = "Verbindung getrennt.".to_string();
-    }
-
-    pub fn is_connected(&self) -> bool {
-        self.connected
-    }
+/// Apply a short demo status line (headless / CI smoke).
+pub fn apply_demo_status(state: &mut ShellState) {
+    state.status_message = "Demo-Modus (kein Live-Gerät, keine Protokollschicht).".to_string();
 }
 
 #[cfg(test)]
@@ -41,14 +16,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn connect_disconnect_updates_state() {
-        let mut session = MockSession::new();
-        let mut state = ShellState::new(true);
-        session.connect(&mut state);
-        assert!(session.is_connected());
-        assert_eq!(state.status, ConnectionStatus::Connected);
-        session.disconnect(&mut state);
-        assert!(!session.is_connected());
-        assert_eq!(state.status, ConnectionStatus::Disconnected);
+    fn demo_status_is_german() {
+        let mut state = ShellState::new();
+        apply_demo_status(&mut state);
+        assert!(state.status_message.contains("Demo-Modus"));
     }
 }

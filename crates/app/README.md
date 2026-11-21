@@ -1,6 +1,7 @@
-# `starter_app` — GPUI Starter Shell
+# `starter_app` — Pure GPUI Shell
 
-Windows-primary desktop binary: thin German UI shell (header, Verbindungspanel, Inhalt, Statusleiste).
+Windows-primary desktop binary: thin German UI shell (header, Navigation, Inhalt, Statusleiste).  
+**No protocol layer** — no Modbus TCP, catalog, registers, or device I/O.
 
 ## GPUI pin
 
@@ -13,21 +14,21 @@ Windows-primary desktop binary: thin German UI shell (header, Verbindungspanel, 
 | Feature flag | `gui` — optional so Linux/Cloud `cargo check --workspace` stays green without native GUI libs |
 
 ```bash
-# Headless / Cloud (default: mock, no GPUI link)
+# Headless / Cloud (default: mock demo copy, no GPUI link)
 cargo run -p starter_app
 
-# Windows GUI (keep mock for in-memory connect smoke)
+# Windows GUI
 cargo run -p starter_app --features gui
 ```
 
 ## Shell layout (German UI)
 
 1. **Header** — App-Titel + Unterzeile  
-2. **Verbindung** — Host / Port / Unit-ID (Platzhalter), **Verbinden** / **Trennen** (Mock)  
+2. **Navigation** — Seitenleiste (Übersicht / Einstellungen / Hilfe)  
 3. **Inhalt** — leerer Hauptbereich als Platzhalter  
-4. **Status** — Verbindungsstatus, Backend-Label, Meldung  
+4. **Status** — kurze Statuszeile  
 
-No Modbus TCP, catalog, register grid, or cyclic-write product features in this starter.
+Panel look inspired by [prime-akikko/test1](https://github.com/prime-akikko/test1); product/protocol features are intentionally absent.
 
 ## Windows build prerequisites (v1 target)
 
