@@ -1,0 +1,15 @@
+[package]
+name = "starter_mock"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description = "Demo UI helpers for the GPUI starter shell (no protocol)"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+starter_core = { workspace = true }
