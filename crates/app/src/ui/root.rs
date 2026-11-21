@@ -102,11 +102,13 @@ impl Render for RootView {
             .bg(theme::bg())
             .text_color(theme::text())
             .font_family("Segoe UI")
-            // Header
+            // Header: title left, logo top-right
             .child(
                 div()
                     .flex()
-                    .flex_col()
+                    .flex_row()
+                    .items_center()
+                    .justify_between()
                     .px_4()
                     .py_3()
                     .bg(theme::panel())
@@ -114,16 +116,22 @@ impl Render for RootView {
                     .border_color(theme::border())
                     .child(
                         div()
-                            .text_xl()
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .child(strings::APP_HEADING),
+                            .flex()
+                            .flex_col()
+                            .child(
+                                div()
+                                    .text_xl()
+                                    .font_weight(FontWeight::SEMIBOLD)
+                                    .child(strings::APP_HEADING),
+                            )
+                            .child(
+                                div()
+                                    .text_xs()
+                                    .text_color(theme::muted())
+                                    .child(strings::APP_SUBHEADING),
+                            ),
                     )
-                    .child(
-                        div()
-                            .text_xs()
-                            .text_color(theme::muted())
-                            .child(strings::APP_SUBHEADING),
-                    ),
+                    .child(div().id("header-logo").text_2xl().child(strings::APP_LOGO)),
             )
             // Body: nav | main
             .child(
