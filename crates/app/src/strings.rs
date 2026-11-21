@@ -5,7 +5,7 @@ pub const WINDOW_TITLE: &str = "GPUI Starter";
 
 pub const APP_HEADING: &str = "GPUI Starter";
 pub const APP_SUBHEADING: &str = "Schlanke Desktop-Oberfläche · Deutsch · Windows-primär";
-/// Top-right header logo (emoji).
+/// Top-left header logo (emoji).
 pub const APP_LOGO: &str = "🎂";
 
 pub const NAV_SECTION: &str = "Navigation";

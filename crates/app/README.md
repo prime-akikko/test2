@@ -23,7 +23,7 @@ cargo run -p starter_app --features gui
 
 ## Shell layout (German UI)
 
-1. **Header** — App-Titel + Unterzeile (links), Logo 🎂 (rechts)  
+1. **Header** — Logo 🎂 (links), dann App-Titel + Unterzeile  
 2. **Navigation** — Seitenleiste (Übersicht / Einstellungen / Hilfe)  
 3. **Inhalt** — leerer Hauptbereich als Platzhalter  
 4. **Status** — kurze Statuszeile  
