@@ -1,0 +1,15 @@
+[package]
+name = "starter_mock"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description = "Thin mock backend stub for the GPUI starter shell"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+starter_core = { workspace = true }

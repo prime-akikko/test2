@@ -1,0 +1,40 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/core",
+    "crates/mock",
+    "crates/app",
+]
+default-members = [
+    "crates/core",
+    "crates/mock",
+    "crates/app",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+rust-version = "1.85"
+authors = ["GPUI starter contributors"]
+description = "Slim GPUI desktop GUI starter (German UI, Windows-primary)"
+
+[workspace.dependencies]
+starter_core = { path = "crates/core", version = "0.1.0" }
+starter_mock = { path = "crates/mock", version = "0.1.0" }
+# GPUI pin: crates.io exact version — Windows-primary.
+# Constraints: Rust ≥ 1.85 (gpui uses edition 2024), MSVC + Windows SDK, D3D11 FL ≥ 11.0.
+# Do not float on zed/zed `main`; bump intentionally with a lockfile update.
+gpui = { version = "=0.2.2" }
+
+[workspace.lints.rust]
+unsafe_code = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+
+# gpui → zed-async-tar → xattr 0.2.3 breaks on recent libc (ENOATTR removed on
+# linux-gnu). Windows GUI builds never compile this unix dep; Linux/Cloud `gui`
+# checks need the vendored one-line alias fix (ENOATTR → ENODATA).
+[patch.crates-io]
+xattr = { path = "vendor/xattr" }
